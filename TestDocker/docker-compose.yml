@@ -1,0 +1,58 @@
+version: '3.4'
+
+networks:
+  dev:
+
+services:
+  testdocker:
+    image: ${DOCKER_REGISTRY-}testdocker
+    container_name: server
+    build: 
+      context: .
+      dockerfile: TestDocker/Dockerfile
+    depends_on: 
+      - database
+    volumes:
+      - "/src:/src" 
+    ports:
+      - "5000:80"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          cpus: '0.01'
+          memory: 100M
+    environment: 
+      - DBHOST=database
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=server=database;port=3306;user=root;password=Cong@@0703;database=test;
+    networks:
+      - dev
+      
+  database:
+    image: mysql:8.0.22
+    networks:
+      - dev 
+    container_name: database
+    ports:
+      - 3307:3306
+    # expose: 
+    #   - 3307
+    volumes:
+      - db-volume:/var/lib/mysql
+      - "~/sql-scripts/setup.sql:/docker-entrypoint-initdb.d/1.sql"
+    restart: always
+    environment: 
+       MYSQL_ROOT_PASSWORD: Cong@@0703
+       MYSQL_USER: test
+       MYSQL_PASSWORD: Cong@@0703
+       MYSQL_DATABASE: test
+    
+volumes:
+   db-volume:
+
+
+
